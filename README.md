@@ -1,4 +1,4 @@
-## openvpn-install
+## openvpn-install-with-static-ip-address
 OpenVPN installer for Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS and Fedora with Static IP address.
 
 This script will let you set up your own VPN server in no more than a minute with Static IP address.
