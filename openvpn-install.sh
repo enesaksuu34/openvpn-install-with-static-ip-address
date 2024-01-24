@@ -455,8 +455,6 @@ else
 		read -p "Option: " option
 	done
 function new_client() {
-    # ... existing code ...
-
     # Check if the IP address file exists
     if [[ -f /etc/openvpn/ip.txt ]]; then
         # Read the last used IP address from the file
@@ -481,6 +479,11 @@ function new_client() {
     # ... existing code ...
 }
 
+until [[ "$option" =~ ^[1-4]$ ]]; do
+    echo "$option: invalid selection."
+    read -p "Option: " option
+done
+
 case "$option" in
     1)
         echo
@@ -497,9 +500,23 @@ case "$option" in
         # Generates the custom client.ovpn
         new_client
         echo
-        echo "$client added. Configuration available in:" ~/"$client.ovpn"
+        echo "$client added. Configuration available in: /root/$client.ovpn"
+        cp /etc/openvpn/server/easy-rsa/pki/issued/"$client".crt /root/"$client.crt"
+        cp /etc/openvpn/server/easy-rsa/pki/private/"$client".key /root/"$client.key"
+        cp /etc/openvpn/ca.crt /root
+        cat /etc/openvpn/client-template.txt > /root/"$client.ovpn"
+        echo "<ca>" >> /root/"$client.ovpn"
+        cat /root/ca.crt >> /root/"$client.ovpn"
+        echo "</ca>" >> /root/"$client.ovpn"
+        echo "<cert>" >> /root/"$client.ovpn"
+        cat /root/"$client.crt" >> /root/"$client.ovpn"
+        echo "</cert>" >> /root/"$client.ovpn"
+        echo "<key>" >> /root/"$client.ovpn"
+        cat /root/"$client.key" >> /root/"$client.ovpn"
+        echo "</key>" >> /root/"$client.ovpn"
         exit
-    ;;
+        ;;
+    # ... existing code ...
 		2)
 			# This option could be documented a bit better and maybe even be simplified
 			# ...but what can I say, I want some sleep too
