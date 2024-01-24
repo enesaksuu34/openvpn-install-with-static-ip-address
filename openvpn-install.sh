@@ -486,7 +486,6 @@ done
 
 case "$option" in
     1)
-		1)
 			echo
 			echo "Provide a name for the client:"
 			read -p "Name: " unsanitized_client
