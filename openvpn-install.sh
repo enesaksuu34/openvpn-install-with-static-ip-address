@@ -454,51 +454,51 @@ else
 		echo "$option: invalid selection."
 		read -p "Option: " option
 	done
-function new_client() {
-    # Check if the IP address file exists
-    if [[ -f /etc/openvpn/ip.txt ]]; then
-        # Read the last used IP address from the file
-        last_ip=$(cat /etc/openvpn/ip.txt)
-        # Increment the IP address
-        IFS='.' read -r -a octets <<< "$last_ip"
-        last_octet=${octets[3]}
-        next_octet=$((last_octet + 1))
-        ip_address="10.8.0.$next_octet"
-    else
-        # Use the default starting IP address
-        ip_address="10.8.0.50"
-    fi
+function new_ccd() {
+	# Check if the IP address file exists
+	if [[ -f /etc/openvpn/ip.txt ]]; then
+		# Read the last used IP address from the file
+		last_ip=$(cat /etc/openvpn/ip.txt)
+		# Increment the IP address
+		IFS='.' read -r -a octets <<< "$last_ip"
+		last_octet=${octets[3]}
+		next_octet=$((last_octet + 1))
+		ip_address="10.8.0.$next_octet"
+	else
+		# Use the default starting IP address
+		ip_address="10.8.0.50"
+	fi
 
-    # Save the current IP address to the file
-    echo "$ip_address" > /etc/openvpn/ip.txt
+	# Save the current IP address to the file
+	echo "$ip_address" > /etc/openvpn/ip.txt
 
-    # Generate client-specific configuration file
-    mkdir -p /etc/openvpn/ccd
-    echo "ifconfig-push $ip_address 255.255.255.0" > /etc/openvpn/ccd/"$client"
+	# Generate client-specific configuration file
+	mkdir -p /etc/openvpn/ccd
+	echo "ifconfig-push $ip_address 255.255.255.0" > /etc/openvpn/ccd/"$client"
 
-    # ... existing code ...
+	# ... existing code ...
 }
 
 until [[ "$option" =~ ^[1-4]$ ]]; do
-    echo "$option: invalid selection."
-    read -p "Option: " option
+	echo "$option: invalid selection."
+	read -p "Option: " option
 done
 
 case "$option" in
-    1)
-			echo
-			echo "Provide a name for the client:"
+	1)
+		echo
+		echo "Provide a name for the client:"
+		read -p "Name: " unsanitized_client
+		client=$(sed 's/[^0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-]/_/g' <<< "$unsanitized_client")
+		while [[ -z "$client" || -e /etc/openvpn/server/easy-rsa/pki/issued/"$client".crt ]]; do
+			echo "$client: invalid name."
 			read -p "Name: " unsanitized_client
 			client=$(sed 's/[^0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-]/_/g' <<< "$unsanitized_client")
-			while [[ -z "$client" || -e /etc/openvpn/server/easy-rsa/pki/issued/"$client".crt ]]; do
-				echo "$client: invalid name."
-				read -p "Name: " unsanitized_client
-				client=$(sed 's/[^0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-]/_/g' <<< "$unsanitized_client")
-			done
-			cd /etc/openvpn/server/easy-rsa/
-			./easyrsa --batch --days=3650 build-client-full "$client" nopass
-			# Generates the custom client.ovpn
-			{
+		done
+		cd /etc/openvpn/server/easy-rsa/
+		./easyrsa --batch --days=3650 build-client-full "$client" nopass
+		# Generates the custom client.ovpn
+		{
 			cat /etc/openvpn/server/client-common.txt
 			echo "<ca>"
 			cat /etc/openvpn/server/easy-rsa/pki/ca.crt
@@ -512,12 +512,12 @@ case "$option" in
 			echo "<tls-crypt>"
 			sed -ne '/BEGIN OpenVPN Static key/,$ p' /etc/openvpn/server/tc.key
 			echo "</tls-crypt>"
-			} > ~/"$client".ovpn
-			echo
-			echo "$client added. Configuration available in:" ~/"$client.ovpn"
-			echo "ifconfig-push $ip_address 255.255.255.0" > /etc/openvpn/ccd/"$client"
-			exit
-        ;;
+		} > ~/"$client".ovpn
+		echo
+		echo "$client added. Configuration available in:" ~/"$client.ovpn"
+		new_ccd # Call the new_client function to generate the client-specific configuration file
+		exit
+		;;
     # ... existing code ...
 		2)
 			# This option could be documented a bit better and maybe even be simplified
