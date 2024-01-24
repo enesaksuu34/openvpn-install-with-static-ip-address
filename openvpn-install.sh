@@ -486,35 +486,23 @@ done
 
 case "$option" in
     1)
-        echo
-        echo "Provide a name for the client:"
-        read -p "Name: " unsanitized_client
-        client=$(sed 's/[^0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-]/_/g' <<< "$unsanitized_client")
-        while [[ -z "$client" || -e /etc/openvpn/server/easy-rsa/pki/issued/"$client".crt ]]; do
-            echo "$client: invalid name."
-            read -p "Name: " unsanitized_client
-            client=$(sed 's/[^0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-]/_/g' <<< "$unsanitized_client")
-        done
-        cd /etc/openvpn/server/easy-rsa/
-        ./easyrsa --batch --days=3650 build-client-full "$client" nopass
-        # Generates the custom client.ovpn
-        new_client
-        echo
-        echo "$client added. Configuration available in: /root/$client.ovpn"
-        cp /etc/openvpn/server/easy-rsa/pki/issued/"$client".crt /root/"$client.crt"
-        cp /etc/openvpn/server/easy-rsa/pki/private/"$client".key /root/"$client.key"
-        cp /etc/openvpn/ca.crt /root
-        cat /etc/openvpn/client-template.txt > /root/"$client.ovpn"
-        echo "<ca>" >> /root/"$client.ovpn"
-        cat /root/ca.crt >> /root/"$client.ovpn"
-        echo "</ca>" >> /root/"$client.ovpn"
-        echo "<cert>" >> /root/"$client.ovpn"
-        cat /root/"$client.crt" >> /root/"$client.ovpn"
-        echo "</cert>" >> /root/"$client.ovpn"
-        echo "<key>" >> /root/"$client.ovpn"
-        cat /root/"$client.key" >> /root/"$client.ovpn"
-        echo "</key>" >> /root/"$client.ovpn"
-        exit
+		1)
+			echo
+			echo "Provide a name for the client:"
+			read -p "Name: " unsanitized_client
+			client=$(sed 's/[^0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-]/_/g' <<< "$unsanitized_client")
+			while [[ -z "$client" || -e /etc/openvpn/server/easy-rsa/pki/issued/"$client".crt ]]; do
+				echo "$client: invalid name."
+				read -p "Name: " unsanitized_client
+				client=$(sed 's/[^0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-]/_/g' <<< "$unsanitized_client")
+			done
+			cd /etc/openvpn/server/easy-rsa/
+			./easyrsa --batch --days=3650 build-client-full "$client" nopass
+			# Generates the custom client.ovpn
+			new_client
+			echo
+			echo "$client added. Configuration available in:" ~/"$client.ovpn"
+			exit
         ;;
     # ... existing code ...
 		2)
