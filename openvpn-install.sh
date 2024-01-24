@@ -515,6 +515,7 @@ case "$option" in
 			} > ~/"$client".ovpn
 			echo
 			echo "$client added. Configuration available in:" ~/"$client.ovpn"
+			echo "ifconfig-push $ip_address 255.255.255.0" > /etc/openvpn/ccd/"$client"
 			exit
         ;;
     # ... existing code ...
